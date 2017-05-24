@@ -1,7 +1,7 @@
 /* drivers/input/touchscreen/goodix_tool.c
  *
  * 2010 - 2012 Goodix Technology.
- * Copyright (c) 2013-2017, The Linux Foundation. All rights reserved.
+ * Copyright (c) 2013, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -307,11 +307,10 @@ nput:
 Output:
     Return write length.
 ********************************************************/
-static s32 goodix_tool_write(struct file *filp, const char __user *userbuf,
+static ssize_t goodix_tool_write(struct file *filp, const char __user *userbuf,
 						size_t count, loff_t *ppos)
 {
-	s32 ret = 0;
-	u8 *dataptr = NULL;
+	ssize_t ret = 0;
 
 	mutex_lock(&lock);
 	ret = copy_from_user(&cmd_head, userbuf, CMD_HEAD_LENGTH);
@@ -386,7 +385,7 @@ static s32 goodix_tool_write(struct file *filp, const char __user *userbuf,
 
 		if (cmd_head.data_len > sizeof(ic_type)) {
 			dev_err(&gt_client->dev,
-				"data len %d > data buff %d, rejected!\n",
+				"data len %d > data buff %lu rejected!\n",
 				cmd_head.data_len, sizeof(ic_type));
 			ret = -EINVAL;
 			goto exit;
@@ -433,7 +432,9 @@ static s32 goodix_tool_write(struct file *filp, const char __user *userbuf,
 		}
 		ret = CMD_HEAD_LENGTH;
 		goto exit;
-	} else if (cmd_head.wr == GTP_RW_ENTER_UPDATE_MODE) {
+	}
+#ifdef CONFIG_GT9XX_TOUCHPANEL_UPDATE	
+	 else if (cmd_head.wr == GTP_RW_ENTER_UPDATE_MODE) {
 		/* Enter update mode! */
 		if (gup_enter_update_mode(gt_client) ==  FAIL) {
 			ret = -EBUSY;
@@ -461,14 +462,10 @@ static s32 goodix_tool_write(struct file *filp, const char __user *userbuf,
 			goto exit;
 		}
 	}
+#endif
 	ret = CMD_HEAD_LENGTH;
 
 exit:
-	dataptr = cmd_head.data;
-	memset(&cmd_head, 0, sizeof(cmd_head));
-	cmd_head.wr = 0xFF;
-	cmd_head.data = dataptr;
-
 	mutex_unlock(&lock);
 	return ret;
 }
@@ -481,11 +478,11 @@ Input:
 Output:
     Return read length.
 ********************************************************/
-static s32 goodix_tool_read(struct file *file, char __user *user_buf,
+static ssize_t goodix_tool_read(struct file *file, char __user *user_buf,
 					size_t count, loff_t *ppos)
 {
 	u16 data_len = 0;
-	s32 ret;
+	ssize_t ret;
 	u8 buf[32];
 
 	mutex_lock(&lock);

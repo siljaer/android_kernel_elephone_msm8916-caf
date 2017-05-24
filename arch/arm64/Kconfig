@@ -12,6 +12,7 @@ config ARM64
 	select ARM_GIC
         select AUDIT_ARCH_COMPAT_GENERIC
 	select BUILDTIME_EXTABLE_SORT
+	select AUDIT_ARCH_COMPAT_GENERIC
 	select CLONE_BACKWARDS
 	select COMMON_CLK if !ARCH_MSM
 	select CPU_PM if (SUSPEND || CPU_IDLE)
@@ -227,6 +228,16 @@ config ARCH_MSM8916
 	help
 	  This enables support for the MSM8916 chipset. If you dont
 	  know what do here, say N
+
+config TRUNK_DTB
+	depends on ARCH_MSM8916
+	default y
+	bool "Elephone Trunk Device DTBs"
+	help
+	  Only include Elephone Trunk specific DTBs to limit the number that 
+	  get built during kernel compilation.
+
+	  If unsure, say "n".
 
 config ARCH_MSM8994
 	bool "Enable Support for Qualcomm MSM8994"
