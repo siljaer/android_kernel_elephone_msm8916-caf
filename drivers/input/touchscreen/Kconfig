@@ -1037,10 +1037,10 @@ config TOUCHSCREEN_GT9XX
 
           If unsure, say N.
 
+source "drivers/input/touchscreen/gt9xx/Kconfig"
+
 if MACH_TRUNK
 source "drivers/input/touchscreen/gt9xx-trunk/Kconfig"
-else
-source "drivers/input/touchscreen/gt9xx/Kconfig"
 endif # MACH_TRUNK
 
 config TOUCHSCREEN_BU21150
